@@ -28,7 +28,31 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS kraft (
 cursor.execute('''CREATE TABLE IF NOT EXISTS objective (
     IDorder INTEGER PRIMARY KEY,
     product text not null UNIQUE,
-    Volume REAL NOT NULL
+    Volume REAL NOT NULL,
+    customer text NOT NULL
+)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS credentials(
+    IDuser INTEGER PRIMARY KEY,
+    login text not null UNIQUE,
+    password text not null,
+    date text not null
+)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS logistics(
+    IDorder INTEGER PRIMARY KEY,
+    condition text not null,
+    content text not null,
+    quantity INTEGER not null,
+    date text not null
+)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS worker(
+    ID INTEGER PRIMARY KEY,
+    fio text not null,
+    age integer not null,
+    telephone integer not null,
+    post text not null
 )''')
 
 # Функция для проверки и добавления данных
@@ -96,11 +120,34 @@ insert_or_ignore_data('kraft', ['product', 'components', 'speed_minut'], kraft_d
 
 # Данные для таблицы objective
 objective_data = [
-    ('пылесос', 1),
-    ('вентилятор', 0),
-    ('электрочайник', 1)
+    ('пылесос', 1, "ZаVод-корпорэйтед"),
+    ('вентилятор', 0, "жкх"),
+    ('электрочайник', 1, "З.п.П.Н.нгЭТ")
 ]
-insert_or_ignore_data('objective', ['product', 'Volume'], objective_data)
+insert_or_ignore_data('objective', ['product', 'Volume','customer'], objective_data)
+
+# Данные для таблицы credentials
+credentials_data = [
+    ('admin','admin','04.05.2025' ),
+    ('user','user','05.05.2025' ),
+    ('rab','rab','06.05.2025' )
+]
+insert_or_ignore_data('credentials', ['login', 'password','date'], credentials_data)
+
+# Данные для таблицы logistics
+logistics_data = [
+    ('принято','сталь','10','01.05.2025'),
+    ('отправлено','чайник','5','02.05.2025'),
+    ('принято','пластик','6','03.05.2025')
+    ]
+insert_or_ignore_data('logistics', ['condition', 'content','quantity','date'], logistics_data)
+
+worker_data = [
+    ('Sergey Lokovich Dmitrievich','54','89278286547','admin'),
+    ('Egor Kish Ivanovich','43','89279282645','user'),
+    ('Azam Portvin Petrovich','24','89358286589','rab')
+]
+insert_or_ignore_data('worker', ['fio', 'age','telephone','post'], worker_data)
 
 # Сохранение изменений
 conn.commit()
@@ -116,6 +163,9 @@ def print_table(table_name):
 print_table('objective')
 print_table('sklad')
 print_table('kraft')
+print_table('credentials')
+print_table('logistics')
+print_table('worker')
 
 # Закрытие соединения
 conn.close()
