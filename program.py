@@ -1,6 +1,13 @@
 import sqlite3
 from collections import defaultdict
 
+conn = sqlite3.connect('project.db')
+conn.row_factory = sqlite3.Row
+row = conn.cursor().execute("SELECT * FROM sklad")
+row_mass = []
+out = []
+
+
 def main():
     # Установка соединения с базой данных SQLite
     conn = sqlite3.connect('project.db')
@@ -51,16 +58,53 @@ def main():
 
 
     # Вывод результатов анализа
-    print("\n=== ПРОДУКЦИЯ С ЗАКАЗОМ ===")
+    #print("\n=== ПРОДУКЦИЯ С ЗАКАЗОМ ===")
     for product, analysis in results_with_order:
-        print_product_analysis(product, analysis, recipes, stock, ordered_products_quantity[num_prods.index(product)])
+        #print_product_analysis(product, analysis, recipes, stock, ordered_products_quantity[num_prods.index(product)])
+        out.append([product, analysis, recipes, stock, ordered_products_quantity[num_prods.index(product)]])
+
+
+
 
     '''print("\n=== ПРОДУКЦИЯ БЕЗ ЗАКАЗА ===")
     for product, analysis in results_without_order:
         print_product_analysis(product, analysis, recipes, stock)'''
 
     # Закрытие соединения с базой данных
+    penis = get_quantity()
     conn.close()
+
+
+
+def get_quantity():
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT IDitem, item, volume FROM sklad")  # Добавляем id в выборку
+        rows = cursor.fetchall()
+        # Преобразуем в список словарей
+        result = [dict(zip([column[0] for column in cursor.description], row)) for row in rows]
+        return result
+    finally:
+        cursor.close()
+
+def set_quantity(data):
+    cursor = conn.cursor()
+    try:
+        for item in data:
+            # Предполагаем, что в словаре есть ключ 'volume' и какой-то идентификатор строки (например, 'id')
+            cursor.execute("UPDATE sklad SET volume = ? WHERE IDitem = ?", 
+                          (item['volume'], item['IDitem']))
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при обновлении данных: {e}")
+        return False
+
+def get_prints():
+    return(out)
+
+
 
 def analyze_product(product, virtual_stock, recipes, parse_components):
     # Проверка наличия рецепта для продукта
