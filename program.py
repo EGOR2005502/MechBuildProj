@@ -20,8 +20,12 @@ def main():
     cursor.execute("SELECT product, Volume FROM objective WHERE Volume > 0")
     ordered_products = {row[0] for row in cursor.fetchall()}
 
+    cursor.execute("SELECT Volume FROM objective WHERE Volume > 0")
+    ordered_products_quantity = [row[0] for row in cursor.fetchall()]
+
     # Основные продукты для анализа (отсортированные по алфавиту)
     target_products = sorted(['электрочайник', 'пылесос', 'вентилятор'])
+    num_prods = []
 
     # Функция для разбора строки компонентов в словарь {компонент: количество}
     def parse_components(comp_str):
@@ -43,17 +47,17 @@ def main():
         # Разделение результатов в зависимости от наличия заказа
         if product in ordered_products:
             results_with_order.append((product, analysis))
-        else:
-            results_without_order.append((product, analysis))
+            num_prods.append(product)
+
 
     # Вывод результатов анализа
     print("\n=== ПРОДУКЦИЯ С ЗАКАЗОМ ===")
     for product, analysis in results_with_order:
-        print_product_analysis(product, analysis, recipes, stock)
+        print_product_analysis(product, analysis, recipes, stock, ordered_products_quantity[num_prods.index(product)])
 
-    print("\n=== ПРОДУКЦИЯ БЕЗ ЗАКАЗА ===")
+    '''print("\n=== ПРОДУКЦИЯ БЕЗ ЗАКАЗА ===")
     for product, analysis in results_without_order:
-        print_product_analysis(product, analysis, recipes, stock)
+        print_product_analysis(product, analysis, recipes, stock)'''
 
     # Закрытие соединения с базой данных
     conn.close()
@@ -238,8 +242,10 @@ def analyze_with_crafting(target_product, virtual_stock, recipes, parse_componen
         'missing_basic': dict(missing_basic)
     }
 
-def print_product_analysis(product, analysis, recipes, initial_stock):
-    print(f"\n{product}:")
+def print_product_analysis(product, analysis, recipes, initial_stock, orders):
+
+
+    print(f"\n Заказано {product} в кол-ве {orders}")
 
     # Вывод недостающих базовых компонентов
     if analysis['missing_basic']:
