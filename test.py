@@ -1,8 +1,9 @@
 import program
 
-
 program.main()
 
-penis = (program.get_quantity())
+result = program.filter_logistics({
+    'content': 'чайник'
+})
 
-program.set_quantity(penis)
+print(result)

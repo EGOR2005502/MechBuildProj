@@ -1,5 +1,6 @@
-import sqlite3
+import sqlite3, os
 from collections import defaultdict
+from datetime import datetime
 
 conn = sqlite3.connect('project.db')
 conn.row_factory = sqlite3.Row
@@ -74,7 +75,8 @@ def main():
     penis = get_quantity()
     conn.close()
 
-
+def destroy_bd():
+    os.remove('project.db')
 
 def get_quantity():
     cursor = conn.cursor()
@@ -103,6 +105,355 @@ def set_quantity(data):
 
 def get_prints():
     return(out)
+
+
+
+def get_workers():
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT ID, fio, age, telephone, post FROM worker")
+        rows = cursor.fetchall()
+        # Преобразуем в список словарей
+        columns = [column[0] for column in cursor.description]
+        result = [dict(zip(columns, row)) for row in rows]
+        return result
+    except Exception as e:
+        print(f"Ошибка при получении данных работников: {e}")
+        return []
+    finally:
+        cursor.close()
+
+def set_workers(data):
+    cursor = conn.cursor()
+    try:
+        for worker in data:
+            cursor.execute("""
+                UPDATE worker 
+                SET fio = ?,
+                    age = ?,
+                    telephone = ?,
+                    post = ?
+                WHERE ID = ?
+            """, (
+                worker['fio'],
+                worker['age'],
+                worker['telephone'],
+                worker['post'],
+                worker['ID']
+            ))
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при обновлении данных работников: {e}")
+        return False
+    finally:
+        cursor.close()
+
+
+def get_objectives():
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT IDorder, product, Volume, customer FROM objective")
+        rows = cursor.fetchall()
+        # Преобразуем в список словарей
+        columns = [column[0] for column in cursor.description]
+        result = [dict(zip(columns, row)) for row in rows]
+        return result
+    except Exception as e:
+        print(f"Ошибка при получении данных заказов: {e}")
+        return []
+    finally:
+        cursor.close()
+
+
+def update_objectives(data):
+    cursor = conn.cursor()
+    try:
+        for objective in data:
+            cursor.execute("""
+                UPDATE objective 
+                SET product = ?,
+                    Volume = ?,
+                    customer = ?
+                WHERE IDorder = ?
+            """, (
+                objective['product'],
+                objective['Volume'],
+                objective['customer'],
+                objective['IDorder']
+            ))
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при обновлении данных заказов: {e}")
+        return False
+    finally:
+        cursor.close()
+
+def add_objective(objective_data):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO objective (product, Volume, customer)
+            VALUES (?, ?, ?)
+        """, (
+            objective_data['product'],
+            objective_data['Volume'],
+            objective_data['customer']
+        ))
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при добавлении заказа: {e}")
+        return False
+    finally:
+        cursor.close()
+
+
+
+def get_credentials():
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT IDuser, login, password, date FROM credentials")
+        rows = cursor.fetchall()
+        # Преобразуем в список словарей
+        columns = [column[0] for column in cursor.description]
+        result = [dict(zip(columns, row)) for row in rows]
+        return result
+    except Exception as e:
+        print(f"Ошибка при получении данных учетных записей: {e}")
+        return []
+    finally:
+        cursor.close()
+
+
+def set_credentials(data):
+    cursor = conn.cursor()
+    try:
+        for credential in data:
+            cursor.execute("""
+                UPDATE credentials 
+                SET login = ?,
+                    password = ?,
+                    date = ?
+                WHERE IDuser = ?
+            """, (
+                credential['login'],
+                credential['password'],
+                credential['date'],
+                credential['IDuser']
+            ))
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при обновлении учетных данных: {e}")
+        return False
+    finally:
+        cursor.close()
+
+
+def add_credential(credential_data):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO credentials (login, password, date)
+            VALUES (?, ?, ?)
+        """, (
+            credential_data['login'],
+            credential_data['password'],
+            credential_data['date']
+        ))
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при добавлении учетной записи: {e}")
+        return False
+    finally:
+        cursor.close()
+
+
+def delete_credential(user_id):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM credentials WHERE IDuser = ?", (user_id,))
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при удалении учетной записи: {e}")
+        return False
+    finally:
+        cursor.close()
+
+
+def get_logistics():
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT IDorder, condition, content, quantity, date FROM logistics")
+        rows = cursor.fetchall()
+        # Преобразуем в список словарей
+        columns = [column[0] for column in cursor.description]
+        result = [dict(zip(columns, row)) for row in rows]
+        return result
+    except Exception as e:
+        print(f"Ошибка при получении данных логистики: {e}")
+        return []
+    finally:
+        cursor.close()
+
+
+def set_logistics(data):
+    cursor = conn.cursor()
+    try:
+        for item in data:
+            cursor.execute("""
+                UPDATE logistics 
+                SET condition = ?,
+                    content = ?,
+                    quantity = ?,
+                    date = ?
+                WHERE IDorder = ?
+            """, (
+                item['condition'],
+                item['content'],
+                item['quantity'],
+                item['date'],
+                item['IDorder']
+            ))
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при обновлении данных логистики: {e}")
+        return False
+    finally:
+        cursor.close()
+
+
+def add_logistics_item(item_data):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO logistics (condition, content, quantity, date)
+            VALUES (?, ?, ?, ?)
+        """, (
+            item_data['condition'],
+            item_data['content'],
+            item_data['quantity'],
+            item_data['date']
+        ))
+        conn.commit()
+        return cursor.lastrowid  # Возвращаем ID новой записи
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при добавлении записи логистики: {e}")
+        return None
+    finally:
+        cursor.close()
+
+
+def delete_logistics_item(order_id):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM logistics WHERE IDorder = ?", (order_id,))
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при удалении записи логистики: {e}")
+        return False
+    finally:
+        cursor.close()
+
+
+def get_logistics_by_order(order_id):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT IDorder, condition, content, quantity, date 
+            FROM logistics 
+            WHERE IDorder = ?
+        """, (order_id,))
+        row = cursor.fetchone()
+        if row:
+            columns = [column[0] for column in cursor.description]
+            return dict(zip(columns, row))
+        return None
+    except Exception as e:
+        print(f"Ошибка при поиске записи логистики: {e}")
+        return None
+    finally:
+        cursor.close()
+
+
+def filter_logistics(filters=None):
+    """
+    Фильтрует записи логистики по заданным параметрам
+    :param filters: словарь с параметрами фильтрации (все поля опциональны)
+        Пример: {
+            'date_range': ['01.05.2025', '05.05.2025'],  # обратите внимание на точки в дате
+            'IDorder': 5,
+            'content': 'Мониторы',
+            'quantity': (10, 20),
+            'condition': 'В пути'
+        }
+    :return: список отфильтрованных записей
+    """
+    cursor = conn.cursor()
+    try:
+        # Базовый запрос
+        query = "SELECT IDorder, condition, content, quantity, date FROM logistics WHERE 1=1"
+        params = []
+        
+        if filters:
+            # Обработка диапазона дат (исправленный формат)
+            if 'date_range' in filters:
+                try:
+                    date_from = datetime.strptime(filters['date_range'][0], '%d.%m.%Y').strftime('%d.%m.%Y')
+                    date_to = datetime.strptime(filters['date_range'][1], '%d.%m.%Y').strftime('%d.%m.%Y')
+                    query += " AND date BETWEEN ? AND ?"
+                    params.extend([date_from, date_to])
+                except ValueError as e:
+                    print(f"Ошибка формата даты: {e}. Ожидается формат 'дд.мм.гггг'")
+                    return []
+            
+            # Остальные фильтры без изменений
+            if 'IDorder' in filters:
+                query += " AND IDorder = ?"
+                params.append(filters['IDorder'])
+            
+            if 'content' in filters:
+                query += " AND content LIKE ?"
+                params.append(f'%{filters["content"]}%')
+            
+            if 'quantity' in filters:
+                if isinstance(filters['quantity'], tuple) and len(filters['quantity']) == 2:
+                    query += " AND quantity BETWEEN ? AND ?"
+                    params.extend(filters['quantity'])
+                else:
+                    query += " AND quantity = ?"
+                    params.append(filters['quantity'])
+            
+            if 'condition' in filters:
+                query += " AND condition = ?"
+                params.append(filters['condition'])
+        
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        
+        columns = [column[0] for column in cursor.description]
+        return [dict(zip(columns, row)) for row in rows]
+    
+    except Exception as e:
+        print(f"Ошибка при фильтрации записей: {e}")
+        return []
+    finally:
+        cursor.close()
 
 
 
