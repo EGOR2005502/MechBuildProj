@@ -60,7 +60,7 @@ def main():
     # Вывод результатов анализа
     #print("\n=== ПРОДУКЦИЯ С ЗАКАЗОМ ===")
     for product, analysis in results_with_order:
-        #print_product_analysis(product, analysis, recipes, stock, ordered_products_quantity[num_prods.index(product)])
+        print_product_analysis(product, analysis, recipes, stock, ordered_products_quantity[num_prods.index(product)])
         out.append([product, analysis, recipes, stock, ordered_products_quantity[num_prods.index(product)]])
 
 
@@ -92,7 +92,7 @@ def set_quantity(data):
     try:
         for item in data:
             # Предполагаем, что в словаре есть ключ 'volume' и какой-то идентификатор строки (например, 'id')
-            cursor.execute("UPDATE sklad SET volume = ? WHERE IDitem = ?", 
+            cursor.execute("UPDATE sklad SET volume = ? WHERE IDitem = ?",
                           (item['volume'], item['IDitem']))
         conn.commit()
         return True
@@ -286,8 +286,8 @@ def analyze_with_crafting(target_product, virtual_stock, recipes, parse_componen
         'missing_basic': dict(missing_basic)
     }
 
-def print_product_analysis(product, analysis, recipes, initial_stock, orders):
 
+def print_product_analysis(product, analysis, recipes, initial_stock, orders):
 
     print(f"\n Заказано {product} в кол-ве {orders}")
 
