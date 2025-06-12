@@ -145,12 +145,12 @@ def run():
     ]
     insert_or_ignore_data('logistics', ['condition', 'content', 'quantity', 'date'], logistics_data)
 
-worker_data = [
-    ('Lokovich Sergey Dmitrievich','54','89278286547','admin'),
-    ('Kish Egor Ivanovich','43','89279282645','user'),
-    ('Portvin Azam Petrovich','24','89358286589','rab')
-]
-insert_or_ignore_data('worker', ['fio', 'age','telephone','post'], worker_data)
+    worker_data = [
+        ('Lokovich Sergey Dmitrievich','54','89278286547','admin'),
+        ('Kish Egor Ivanovich','43','89279282645','user'),
+        ('Portvin Azam Petrovich','24','89358286589','rab')
+    ]
+    insert_or_ignore_data('worker', ['fio', 'age','telephone','post'], worker_data)
 
     # Сохранение изменений
     conn.commit()
