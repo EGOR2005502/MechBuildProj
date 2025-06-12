@@ -3,8 +3,9 @@ from pygame.draw import rect
 
 
 class Button:
-    def __init__(self, position, scale, text, color=(0, 200, 0), text_color=(0, 0, 0),
-                 visible=True):
+    def __init__(self, front_instance, position, scale, text, color=(0, 200, 0),
+                 text_color=(0, 0, 0), visible=True):
+        self.front = front_instance
         if visible:
             self.x = position[0]
             self.y = position[1]
@@ -32,23 +33,25 @@ class Button:
         self.visible = visible
         self.font = font.SysFont('lucidaconsole', 15)
 
-    def draw(self, surface, mouse_pos):
-        if self.rect.collidepoint(mouse_pos):
+    def draw(self):
+        if self.rect.collidepoint(self.front.mouse_pos):
             self.color = self.target_color
         else:
             self.color = self.cf
         if self.visible:
-            rect(surface, self.color2, self.rect2, 4, 10)
-            rect(surface, self.color, self.rect, border_radius=10)
-            draw_text_centered(self.font, surface, self.text, self.x, self.y)
+            rect(self.front.screen, self.color2, self.rect2, 4, 10)
+            rect(self.front.screen, self.color, self.rect, border_radius=10)
+            draw_text_centered(self.font, self.front.screen, self.text, self.x, self.y)
 
     def create_rect_centered(self, w, h):
         top_left_x = self.x - w // 2
         top_left_y = self.y - h // 2
         return Rect(top_left_x, top_left_y, w, h)
 
-    def activate(self, mouse_pos, mouse_key):
-        return self.rect.collidepoint(mouse_pos) and mouse_key == 1
+    def activate(self):
+        if self.front.mouse_key == 1 and self.rect.collidepoint(self.front.mouse_pos):
+            return True
+        return False
 
 
 def draw_text_centered(font, screen, text, x, y, text_color=(0, 0, 0), padding=20):

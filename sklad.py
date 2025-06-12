@@ -124,7 +124,7 @@ def run():
     # Данные для таблицы objective
     objective_data = [
         ('пылесос', 1, "ZаVод-корпорэйтед"),
-        ('вентилятор', 0, "жкх"),
+        ('вентилятор', 1, "жкх"),
         ('электрочайник', 1, "З.п.П.Н.нгЭТ")
     ]
     insert_or_ignore_data('objective', ['product', 'Volume', 'customer'], objective_data)

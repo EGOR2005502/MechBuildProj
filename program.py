@@ -57,26 +57,26 @@ def main():
             results_with_order.append((product, analysis))
             num_prods.append(product)
 
-
     # Вывод результатов анализа
-    #print("\n=== ПРОДУКЦИЯ С ЗАКАЗОМ ===")
+    # print("\n=== ПРОДУКЦИЯ С ЗАКАЗОМ ===")
+    l = []
     for product, analysis in results_with_order:
-        print_product_analysis(product, analysis, recipes, stock, ordered_products_quantity[num_prods.index(product)])
+        ls = print_product_analysis(product, analysis, recipes, stock, ordered_products_quantity[num_prods.index(product)])
+        l.append(ls)
         out.append([product, analysis, recipes, stock, ordered_products_quantity[num_prods.index(product)]])
-
-
-
 
     '''print("\n=== ПРОДУКЦИЯ БЕЗ ЗАКАЗА ===")
     for product, analysis in results_without_order:
         print_product_analysis(product, analysis, recipes, stock)'''
 
     # Закрытие соединения с базой данных
-    penis = get_quantity()
     conn.close()
+    return l
+
 
 def destroy_bd():
     os.remove('project.db')
+
 
 def get_quantity():
     cursor = conn.cursor()
@@ -89,13 +89,14 @@ def get_quantity():
     finally:
         cursor.close()
 
+
 def set_quantity(data):
     cursor = conn.cursor()
     try:
         for item in data:
             # Предполагаем, что в словаре есть ключ 'volume' и какой-то идентификатор строки (например, 'id')
             cursor.execute("UPDATE sklad SET volume = ? WHERE IDitem = ?",
-                          (item['volume'], item['IDitem']))
+                           (item['volume'], item['IDitem']))
         conn.commit()
         return True
     except Exception as e:
@@ -103,9 +104,9 @@ def set_quantity(data):
         print(f"Ошибка при обновлении данных: {e}")
         return False
 
-def get_prints():
-    return(out)
 
+def get_prints():
+    return (out)
 
 
 def get_workers():
@@ -122,6 +123,7 @@ def get_workers():
         return []
     finally:
         cursor.close()
+
 
 def set_workers(data):
     cursor = conn.cursor()
@@ -192,6 +194,7 @@ def update_objectives(data):
     finally:
         cursor.close()
 
+
 def add_objective(objective_data):
     cursor = conn.cursor()
     try:
@@ -211,7 +214,6 @@ def add_objective(objective_data):
         return False
     finally:
         cursor.close()
-
 
 
 def get_credentials():
@@ -409,7 +411,7 @@ def filter_logistics(filters=None):
         # Базовый запрос
         query = "SELECT IDorder, condition, content, quantity, date FROM logistics WHERE 1=1"
         params = []
-        
+
         if filters:
             # Обработка диапазона дат (исправленный формат)
             if 'date_range' in filters:
@@ -421,16 +423,16 @@ def filter_logistics(filters=None):
                 except ValueError as e:
                     print(f"Ошибка формата даты: {e}. Ожидается формат 'дд.мм.гггг'")
                     return []
-            
+
             # Остальные фильтры без изменений
             if 'IDorder' in filters:
                 query += " AND IDorder = ?"
                 params.append(filters['IDorder'])
-            
+
             if 'content' in filters:
                 query += " AND content LIKE ?"
                 params.append(f'%{filters["content"]}%')
-            
+
             if 'quantity' in filters:
                 if isinstance(filters['quantity'], tuple) and len(filters['quantity']) == 2:
                     query += " AND quantity BETWEEN ? AND ?"
@@ -438,23 +440,22 @@ def filter_logistics(filters=None):
                 else:
                     query += " AND quantity = ?"
                     params.append(filters['quantity'])
-            
+
             if 'condition' in filters:
                 query += " AND condition = ?"
                 params.append(filters['condition'])
-        
+
         cursor.execute(query, params)
         rows = cursor.fetchall()
-        
+
         columns = [column[0] for column in cursor.description]
         return [dict(zip(columns, row)) for row in rows]
-    
+
     except Exception as e:
         print(f"Ошибка при фильтрации записей: {e}")
         return []
     finally:
         cursor.close()
-
 
 
 def analyze_product(product, virtual_stock, recipes, parse_components):
@@ -538,6 +539,7 @@ def analyze_product(product, virtual_stock, recipes, parse_components):
         'base_time': base_time_per_unit,
         'total_time': total_time if limiting_factor > 0 else 0
     }
+
 
 def analyze_with_crafting(target_product, virtual_stock, recipes, parse_components):
     # Проверка наличия рецепта для целевого продукта
@@ -639,32 +641,45 @@ def analyze_with_crafting(target_product, virtual_stock, recipes, parse_componen
 
 
 def print_product_analysis(product, analysis, recipes, initial_stock, orders):
-
+    lines = []
     print(f"\n Заказано {product} в кол-ве {orders}")
+    lines.append(f"Заказано {product} в кол-ве {orders}")
 
     # Вывод недостающих базовых компонентов
     if analysis['missing_basic']:
         print("\nНедостающие базовые компоненты:")
+        lines.append("Недостающие базовые компоненты:")
         for comp, qty in analysis['missing_basic'].items():
             available = initial_stock.get(comp, 0)
             print(f"- {comp}: нужно {qty} (доступно {available})")
+            lines.append(f"- {comp}: нужно {qty} (доступно {available})")
 
     # Вывод информации о производстве без дополнительного создания компонентов
     if analysis['can_produce'] and analysis['limiting_factor'] > 0:
         print(f"\nМожно произвести сразу (без создания новых компонентов): {analysis['limiting_factor']} шт.")
+        lines.append(f"Можно произвести сразу (без создания новых компонентов): {analysis['limiting_factor']} шт.")
         if analysis['total_time'] > analysis['base_time'] * analysis['limiting_factor']:
             print(f"Общее время производства: {analysis['total_time']:.2f} минут (включая создание компонентов)")
             print(f"Из них:")
             print(f"- Время сборки: {analysis['base_time'] * analysis['limiting_factor']:.2f} минут")
-            print(f"- Время создания компонентов: {analysis['total_time'] - analysis['base_time'] * analysis['limiting_factor']:.2f} минут")
+            print(
+                f"- Время создания компонентов: {analysis['total_time'] - analysis['base_time'] * analysis['limiting_factor']:.2f} минут")
+            lines.append(f"Общее время производства: {analysis['total_time']:.2f} минут (включая создание компонентов)")
+            lines.append(f"Из них:")
+            lines.append(f"- Время сборки: {analysis['base_time'] * analysis['limiting_factor']:.2f} минут")
+            lines.append(f"- Время создания компонентов: {analysis['total_time'] - analysis['base_time'] * analysis['limiting_factor']:.2f} минут")
         else:
             print(f"Время производства: {analysis['total_time']:.2f} минут")
+            lines.append(f"Время производства: {analysis['total_time']:.2f} минут")
         print(f"Среднее время на единицу: {analysis['total_time'] / analysis['limiting_factor']:.2f} минут")
+        lines.append(f"Среднее время на единицу: {analysis['total_time'] / analysis['limiting_factor']:.2f} минут")
     elif analysis['missing']:
         if not analysis['missing_basic'] or set(analysis['missing'].keys()) != set(analysis['missing_basic'].keys()):
             print("\nНельзя произвести сразу. Недостающие компоненты:")
+            lines.append("Нельзя произвести сразу. Недостающие компоненты:")
             for comp, qty in analysis['missing'].items():
                 print(f"- {comp}: не хватает {qty} шт.")
+                lines.append(f"- {comp}: не хватает {qty} шт.")
 
     # Вывод информации о производстве с созданием компонентов
     if analysis['crafted_analysis']:
@@ -672,27 +687,41 @@ def print_product_analysis(product, analysis, recipes, initial_stock, orders):
         if crafted['possible'] and crafted['limiting_factor'] > 0:
             print(f"\nПри дособирании компонентов можно произвести: {crafted['limiting_factor']} шт.")
             print(f"Общее время производства: {crafted['total_time']:.2f} минут")
+            lines.append(f"При дособирании компонентов можно произвести: {crafted['limiting_factor']} шт.")
+            lines.append(f"Общее время производства: {crafted['total_time']:.2f} минут")
             if crafted['limiting_factor'] > 0:
                 print(f"Время на единицу: {crafted['total_time'] / crafted['limiting_factor']:.2f} минут")
+                lines.append(f"Время на единицу: {crafted['total_time'] / crafted['limiting_factor']:.2f} минут")
             print("\nДля этого нужно создать:")
+            lines.append("Для этого нужно создать:")
             for comp, qty in crafted['created_components'].items():
                 print(f"- {comp}: {qty} шт.")
+                lines.append(f"- {comp}: {qty} шт.")
 
-            if crafted['missing_basic'] and not all(comp in analysis['missing_basic'] for comp in crafted['missing_basic']):
+            if crafted['missing_basic'] and not all(
+                    comp in analysis['missing_basic'] for comp in crafted['missing_basic']):
                 print("\nНедостающие базовые компоненты (невозможно произвести):")
+                lines.append("Недостающие базовые компоненты (невозможно произвести):")
                 for comp, qty in crafted['missing_basic'].items():
                     available = initial_stock.get(comp, 0)
                     print(f"- {comp}: нужно {qty} (доступно {available})")
+                    lines.append(f"- {comp}: нужно {qty} (доступно {available})")
         else:
             if not analysis['missing_basic']:
                 print("\nДаже с дособиранием невозможно произвести.")
+                lines.append("Даже с дособиранием невозможно произвести.")
                 if crafted['missing_basic']:
                     print("Недостающие базовые компоненты:")
+                    lines.append("Недостающие базовые компоненты:")
                     for comp, qty in crafted['missing_basic'].items():
                         available = initial_stock.get(comp, 0)
                         print(f"- {comp}: нужно {qty} (доступно {available})")
+                        lines.append(f"- {comp}: нужно {qty} (доступно {available})")
     elif analysis['missing'] and not any(comp in recipes for comp in analysis['missing']):
         print("\nНевозможно произвести - отсутствуют базовые компоненты.")
+        lines.append("Невозможно произвести - отсутствуют базовые компоненты.")
+    return lines
+
 
 if __name__ == "__main__":
     main()
